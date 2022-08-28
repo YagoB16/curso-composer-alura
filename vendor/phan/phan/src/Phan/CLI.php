@@ -35,9 +35,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Console\Terminal;
 
+use function array_key_exists;
 use function array_map;
 use function array_merge;
-use function array_key_exists;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -84,7 +84,7 @@ class CLI
     /**
      * This should be updated to x.y.z-dev after every release, and x.y.z before a release.
      */
-    public const PHAN_VERSION = '5.4.0';
+    public const PHAN_VERSION = '5.4.1';
 
     /**
      * List of short flags passed to getopt

@@ -266,6 +266,7 @@ class Clazz extends AddressableElement
         } elseif ($class->isTrait()) {
             $flags = \ast\flags\CLASS_TRAIT;
         }
+        // FIXME readonly flag
         if ($class->isAbstract()) {
             $flags |= \ast\flags\CLASS_ABSTRACT;
         }
@@ -1513,10 +1514,11 @@ class Clazz extends AddressableElement
                 '@abstract'
             );
         }
-
-        // Update the FQSEN if it's not associated with this
-        // class yet (always true)
-        if ($constant->getFQSEN() !== $constant_fqsen) {
+        if ($constant->getClass($code_base)->isTrait()) {
+            $constant = $constant->createUseAlias($this);
+        } elseif ($constant->getFQSEN() !== $constant_fqsen) {
+            // Update the FQSEN if it's not associated with this
+            // class yet (always true)
             $constant = clone($constant);
             $constant->setFQSEN($constant_fqsen);
         }
@@ -1543,6 +1545,7 @@ class Clazz extends AddressableElement
             );
         }
         // Traits don't have constants, thankfully, so the logic is simple.
+        // FIXME now they do
         if ($inherited_constant->isStrictlyMoreVisibleThan($overriding_constant)) {
             if ($inherited_constant->isPHPInternal()) {
                 if (!$overriding_constant->checkHasSuppressIssueAndIncrementCount(Issue::ConstantAccessSignatureMismatchInternal)) {
@@ -1743,20 +1746,31 @@ class Clazz extends AddressableElement
             );
         }
 
-        $constant = $code_base->getClassConstantByFQSEN(
-            $constant_fqsen
-        );
+        $constant = $code_base->getClassConstantByFQSEN($constant_fqsen);
 
-        if ($constant->isPublic()) {
-            // Most constants are public, check that first.
+        if ($constant->isPublic() && !$this->isTrait()) {
+            // Most constants are public and declared outside of traits, check that after checking if the declaring class was a trait
             return $constant;
         }
-
-        // Visibility checks for private/protected class constants:
 
         $accessing_class = $context->getClassFQSENOrNull();
         if ($accessing_class && $constant->isAccessibleFromClass($code_base, $accessing_class)) {
             return $constant;
+        }
+        // Visibility checks for private/protected class constants:
+        if ($this->isTrait()) {
+            throw new IssueException(
+                Issue::fromType(Issue::AccessClassConstantOfTraitDirectly)(
+                    $context->getFile(),
+                    $context->getLineNumberStart(),
+                    [
+                        $constant_fqsen,
+                        $this->fqsen,
+                        $constant->getContext()->getFile(),
+                        $constant->getContext()->getLineNumberStart()
+                    ]
+                )
+            );
         }
 
         if ($constant->isPrivate()) {
@@ -1766,7 +1780,7 @@ class Clazz extends AddressableElement
                     $context->getFile(),
                     $context->getLineNumberStart(),
                     [
-                        (string)$constant_fqsen,
+                        $constant_fqsen,
                         $constant->getContext()->getFile(),
                         $constant->getContext()->getLineNumberStart()
                     ]
@@ -1780,7 +1794,7 @@ class Clazz extends AddressableElement
                 $context->getFile(),
                 $context->getLineNumberStart(),
                 [
-                    (string)$constant_fqsen,
+                    $constant_fqsen,
                     $constant->getContext()->getFile(),
                     $constant->getContext()->getLineNumberStart()
                 ]
@@ -2412,16 +2426,21 @@ class Clazz extends AddressableElement
      */
     public function isPropertyImmutableFromContext(CodeBase $code_base, Context $context, string $prop_name): bool
     {
-        if (!$this->isImmutableAtRuntime()) {
-            return false;
-        }
-        if (!$this->isReadonly()) {
-            // This is an enum or an internal class where properties can't be mutated at runtime.
-            return true;
-        }
         if (!$this->hasPropertyWithName($code_base, $prop_name)) {
-            // Cannot add undeclared properties to a readonly class.
-            return true;
+            // Cannot add undeclared properties to a readonly class or enum or internal readonly class.
+            return $this->isImmutableAtRuntime();
+        }
+        if ($this->isImmutableAtRuntime()) {
+            if (!$this->isReadonly()) {
+                // This is an enum or an internal class where properties can't be mutated at runtime.
+                return true;
+            }
+        }
+        $property = $this->getPropertyByName($code_base, $prop_name);
+        if ($property->isReadOnlyReal()) {
+            // A `readonly` property can only be mutated from within the declaration's own class scope.
+            // (even public properties)
+            return $context->getClassFQSENOrNull() !== $property->getDefiningClassFQSEN();
         }
         // Declared Properties of readonly classes can be initialized once, inside or outside of the class.
         //
@@ -2429,8 +2448,6 @@ class Clazz extends AddressableElement
         // - For now, the existing logic for PhanAccessReadOnlyProperty on phpdoc `@readonly` or real `readonly`
         //   will continue to be used.
         //
-        // $prop_context = $this->getPropertyByName($code_base, $prop_name)->getContext();
-        // return $context->getClassFQSENOrNull() !== $prop_context->getClassFQSEN();
         return false;
     }
 

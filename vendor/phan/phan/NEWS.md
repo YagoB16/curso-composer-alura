@@ -1,5 +1,19 @@
 Phan NEWS
 
+Aug 25 2022, Phan 5.4.1
+-----------------------
+
+New Features(Analysis):
+- Support parsing php 8.2's disjunctive normal form types (e.g. `A|(B&C)` (https://wiki.php.net/rfc/dnf_types). (#4699)
+- Support php 8.2 class constants on trait RFC. (#4687)
+  Emit `PhanCompatibleTraitConstant` when using constants on traits with a `minimum_target_php_version` below `'8.2'`
+  Emit `PhanAccessClassConstantOfTraitDirectly` when directly referencing the class constant on the trait declaration.
+- Emit `PhanTypeModifyImmutableObjectProperty` for PHP 8.1 `readonly` properties when modified anywhere outside of the
+  declaring class's scope. (#4710)
+
+Miscellaneous:
+- Allow `array_filter` `$callback` to be null (#4715)
+
 Aug 08 2022, Phan 5.4.0
 -----------------------
 

@@ -1080,7 +1080,7 @@ class TolerantASTConverter
                 $element_value = $array_element->elementValue ?? null;
                 // Workaround for <= 0.0.5
                 // TODO: Remove workaround?
-                $ast_expr = ($element_value !== null && !($element_value instanceof MissingToken)) ? static::phpParserNodeToAstNode($array_element->elementValue) : null;
+                $ast_expr = ($element_value !== null && !($element_value instanceof MissingToken)) ? static::phpParserNodeToAstNode($element_value) : null;
                 if ($kind === \ast\AST_YIELD) {
                     $element_key = $array_element->elementKey ?? null;
                     $key = $element_key !== null ? static::phpParserNodeToAstNode($element_key) : null;
@@ -3349,7 +3349,8 @@ class TolerantASTConverter
     /**
      * @param ast\Node|string|int|float|null $node
      */
-    private static function setDeprecatedEncapsVar($node): void {
+    private static function setDeprecatedEncapsVar($node): void
+    {
         if ($node instanceof ast\Node && \in_array($node->kind, [ast\AST_VAR, ast\AST_DIM], true)) {
             if (PHP_VERSION_ID >= 80200) {
                 // Make flags identical to native ast version for unit tests.
