@@ -1,11 +1,11 @@
 {
-    "name": "alura/buscador-curso",
+    "name": "yago/buscador-curso",
     "description": "Projeto que busca os cursos no site da Alura",
     "type": "library",
     "authors": [
         {
             "name": "Yago Barbosa",
-            "email": "91913602+YagoB16@users.noreply.github.com"
+            "email": "ybarbosa1608@gmail.com"
         }
     ],
     "require": {

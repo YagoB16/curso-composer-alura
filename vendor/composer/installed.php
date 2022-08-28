@@ -1,24 +1,15 @@
 <?php return array(
     'root' => array(
-        'name' => 'alura/buscador-curso',
+        'name' => 'yago/buscador-curso',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '8e17d925335087a94183d09ce5f1368e1d49661e',
+        'reference' => 'bde963e3bd342e2a152dd3e86bc099348bbb74c8',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'dev' => true,
     ),
     'versions' => array(
-        'alura/buscador-curso' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => '8e17d925335087a94183d09ce5f1368e1d49661e',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../../',
-            'aliases' => array(),
-            'dev_requirement' => false,
-        ),
         'composer/pcre' => array(
             'pretty_version' => '3.0.0',
             'version' => '3.0.0.0',
@@ -600,6 +591,15 @@
             'install_path' => __DIR__ . '/../webmozart/assert',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'yago/buscador-curso' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'bde963e3bd342e2a152dd3e86bc099348bbb74c8',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
     ),
 );
