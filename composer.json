@@ -15,7 +15,7 @@
     },
     "autoload": {
         "classmap": [
-            "./teste.php"
+            "./src/Buscador.php"
         ],
         "files":[
             
